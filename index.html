@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Hub & Master Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for clean aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Custom subtle glassmorphism */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .code-highlight {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-200 flex flex-col selection:bg-blue-600 selection:text-white">
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-out flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-xl shadow-2xl border border-emerald-400/30">
+        <i class="fa-solid fa-circle-check text-xl"></i>
+        <div>
+            <h4 class="font-bold text-sm">¡Copiado con éxito!</h4>
+            <p class="text-xs text-emerald-100" id="toast-message">El contenido está en tu portapapeles.</p>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <i class="fa-solid fa-wand-magic-sparkles text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">PromptHub</span>
+                        <span class="text-xs px-2 py-0.5 ml-2 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">v2.5 Studio</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="flex space-x-1 sm:space-x-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                    <button id="tab-btn-image" onclick="switchTab('image')" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-blue-600 text-white shadow-md shadow-blue-600/30">
+                        <i class="fa-solid fa-image text-xs"></i>
+                        <span>Prompts de Imagen</span>
+                    </button>
+                    <button id="tab-btn-character" onclick="switchTab('character')" class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                        <i class="fa-solid fa-user-gear text-xs"></i>
+                        <span>Creación de Personaje</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: PROMPTS DE CREACIÓN DE IMAGEN -->
+        <!-- ========================================== -->
+        <section id="tab-image" class="tab-content space-y-8 animate-fadeIn">
+            
+            <!-- Section Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                        <i class="fa-solid fa-camera-retro text-blue-500"></i>
+                        Prompts de Creación de Imagen
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Estructuras formales y ejemplos de alta precisión para IA generativa de imágenes.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyAllInSection('tab-image')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-regular fa-copy"></i>
+                        Copiar Vista Completa
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- CARD 1: ESTRUCTURA DEL PROMPT -->
+                <div class="glass-panel rounded-2xl overflow-hidden flex flex-col border border-slate-800 hover:border-slate-700/80 transition">
+                    <div class="p-5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">01</span>
+                            <div>
+                                <h3 class="font-bold text-white text-base">Estructura Base del Prompt</h3>
+                                <p class="text-xs text-slate-400">Fórmula de variables intercambiables</p>
+                            </div>
+                        </div>
+                        <button onclick="copyTextFromElement('prompt-structure-text')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition flex items-center gap-1.5 shadow-lg shadow-blue-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copiar</span>
+                        </button>
+                    </div>
+
+                    <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+                        <!-- Visual Formula Display -->
+                        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800/80 font-mono text-sm sm:text-base leading-relaxed text-slate-200" id="prompt-structure-text">[Sujeto] en [estilo o técnica], ambientado en [entorno o escenario] con una [atmósfera o ambiente]. Incluir [detalles], imitar una [cámara específica + apertura], usar [estilo de iluminación], componer con [reglas de composición o perspectiva].</div>
+
+                        <!-- Parameter breakdown list -->
+                        <div class="space-y-2 text-xs text-slate-400">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">Componentes Clave:</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Sujeto:</span> Objeto, persona o entidad principal.</div>
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Estilo/Técnica:</span> Fotorrealista, 3D, acuarela, etc.</div>
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Entorno:</span> Ubicación y contexto espacial.</div>
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Atmósfera:</span> Estado de ánimo o paleta de color.</div>
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Cámara:</span> Óptica, lente (ej. 50mm) y sensor.</div>
+                                <div class="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50"><span class="text-blue-400 font-medium">Iluminación:</span> Esquema de luces (ej. hora dorada).</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: EJEMPLO PRÁCTICO COMPLETO -->
+                <div class="glass-panel rounded-2xl overflow-hidden flex flex-col border border-slate-800 hover:border-slate-700/80 transition">
+                    <div class="p-5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">02</span>
+                            <div>
+                                <h3 class="font-bold text-white text-base">Ejemplo Aplicado Completo</h3>
+                                <p class="text-xs text-slate-400">Ejemplo hiperrealista y detallado listo para usar</p>
+                            </div>
+                        </div>
+                        <button onclick="copyTextFromElement('prompt-example-text')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copiar</span>
+                        </button>
+                    </div>
+
+                    <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+                        <!-- Example Text Block -->
+                        <div class="bg-slate-950 p-5 rounded-xl border border-slate-800/80 text-sm leading-relaxed text-slate-200" id="prompt-example-text">
+Un niño sosteniendo un globo rojo, capturado en un estilo cinematográfico hiperrealista, de pie en medio de una calle vacía al atardecer, con un ambiente frío y azul, y en el fondo se ven farolas encendidas. La expresión del niño refleja una silenciosa melancolía. El globo rojo resalta como el único elemento vibrante en la escena. Capturado con una cámara ARRI Alexa 65, lente de 50mm. Con un enfoque en el niño, difuminando el fondo. La iluminación es atmosférica y dramática, con un cálido resplandor dorado de los últimos rayos del sol iluminando suavemente su rostro, contrastando con las sombras frías de la ciudad vacía.
+                        </div>
+
+                        <!-- Tag Badges -->
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-camera mr-1 text-slate-400"></i> ARRI Alexa 65</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-circle-dot mr-1 text-slate-400"></i> 50mm Lens</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-sun mr-1 text-amber-400"></i> Atardecer / Hora Dorada</span>
+                            <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-palette mr-1 text-blue-400"></i> Contraste Cálido/Frío</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- TAB 2: PROMPT DE CREACIÓN DE PERSONAJE -->
+        <!-- ========================================== -->
+        <section id="tab-character" class="tab-content hidden space-y-8 animate-fadeIn">
+            
+            <!-- Section Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                        <i class="fa-solid fa-user-astronaut text-purple-500"></i>
+                        Prompt Maestro: Creación de Personaje Integrado
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Metaprompt estructural de 5 pasos diseñado para generar un pack completo de consistente en IA (Omni Veo 3.1 & Audio Castellano).</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="copyTextFromElement('master-character-prompt')" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-purple-600/20">
+                        <i class="fa-regular fa-copy"></i>
+                        Copiar Prompt Completo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Master Prompt Display Block -->
+            <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+                
+                <!-- Bar header -->
+                <div class="p-4 sm:p-5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-xs font-mono text-slate-400 ml-2">master_character_prompt_system.txt</span>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-mono">Expert System Prompt</span>
+                </div>
+
+                <!-- Main Text Content Box -->
+                <div class="p-6 sm:p-8 bg-slate-950 font-mono text-xs sm:text-sm text-slate-300 leading-relaxed space-y-6 overflow-x-auto whitespace-pre-wrap select-text" id="master-character-prompt">Actúa como un ingeniero de prompts experto. A partir de la TEMÁTICA DEL PERSONAJE, tu objetivo es desglosar la idea y generar un pack de creación de 5 pasos escrito completamente en inglés, presentado en bloques limpios y fáciles de copiar. Ponme una cabecera en español para cada prompt. Debes inventar y adaptar los detalles del personaje, su voz y los entornos en base a la temática para que todo sea coherente y espectacular, siguiendo exactamente esta estructura:
+
+1. Base Image Creation (Characters - Create): Crea un prompt en inglés para un retrato de referencia de cuerpo completo muy detallado, con múltiples ángulos y una iluminación de estudio que capture la esencia y vestimenta del personaje de la temática.
+
+2. Character Behavior (Optional Info): Define en inglés la personalidad, el estilo de movimiento y las expresiones del personaje de forma madura y profesional.
+
+3. Voice Configuration (Interpretación vocal): Describe en inglés el tono vocal, la textura y la edad adecuados para el personaje. Incluye siempre esta instrucción crucial: "Crucial instruction: The voice must completely adapt its accent, phonetics, and intonation to native Castilian Spanish naturally, eliminating any American or English accent."
+
+4. Video Animation 1 (Omni Veo 3.1): Un prompt detallado en inglés para una escena cinematográfica en relación de aspecto 16:9 y resolución 8k. Enfócate en un primer plano nítido para el personaje y un fondo dinámico difuminado basado en el primer entorno de la temática. Incluye la instrucción de sincronización de labios que coincida exactamente con este diálogo en español: (ponéis aquí el texto que queráis)
+
+5. Video Animation 2 (Omni Veo 3.1): Un segundo prompt en inglés para una escena cinematográfica en un segundo entorno diferente de la temática, manteniendo la consistencia del personaje, su sincronización de labios y una acción física impactante al final del diálogo. Debe coincidir exactamente con este diálogo en español: (ponéis aquí el texto que queráis)</div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500 mt-auto">
+        <p>© 2026 AI Prompt Engineering System • Diseñado para flujo de trabajo dinámico e Immersive Single-Page Apps</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabKey) {
+            const tabs = ['image', 'character'];
+            
+            tabs.forEach(key => {
+                const content = document.getElementById(`tab-${key}`);
+                const btn = document.getElementById(`tab-btn-${key}`);
+                
+                if (key === tabKey) {
+                    content.classList.remove('hidden');
+                    btn.className = "tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-blue-600 text-white shadow-md shadow-blue-600/30";
+                } else {
+                    content.classList.add('hidden');
+                    btn.className = "tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+                }
+            });
+        }
+
+        // Copy Text Function with Fallback
+        function copyTextFromElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const textToCopy = element.innerText || element.textContent;
+
+            // Using execCommand for maximum iframe compatibility
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            // Avoid scrolling to bottom
+            tempTextArea.style.top = "0";
+            tempTextArea.style.left = "0";
+            tempTextArea.style.position = "fixed";
+            document.body.appendChild(tempTextArea);
+            tempTextArea.focus();
+            tempTextArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('Texto copiado al portapapeles');
+                } else {
+                    showToast('Error al copiar el texto');
+                }
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+                showToast('No se pudo copiar');
+            }
+
+            document.body.removeChild(tempTextArea);
+        }
+
+        // Copy all prompts in current active view
+        function copyAllInSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+
+            const textBlocks = section.querySelectorAll('[id$="-text"]');
+            let combinedText = '';
+
+            textBlocks.forEach((block, idx) => {
+                combinedText += `--- PROMPT ${idx + 1} ---\n` + block.innerText.trim() + '\n\n';
+            });
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = combinedText.trim();
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            showToast('Todos los prompts de esta sección copiados');
+        }
+
+        // Toast Notification Display
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            
+            toastMsg.innerText = message || 'Contenido copiado al portapapeles.';
+            
+            // Slide in
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            // Slide out after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
